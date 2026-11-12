@@ -1,0 +1,36 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  del:
+    name: ${{ format('del ({0}/{1})', matrix.del, strategy.job-total) }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        del: ${{ fromJSON('{"1":[1],"2":[1,2],"3":[1,2,3],"4":[1,2,3,4],"5":[1,2,3,4,5]}')[vars.PROBE_N] }}
+    outputs:
+      ut_1: ${{ steps.s.outputs.ut_1 }}
+      ut_2: ${{ steps.s.outputs.ut_2 }}
+      ut_3: ${{ steps.s.outputs.ut_3 }}
+      ut_4: ${{ steps.s.outputs.ut_4 }}
+      ut_5: ${{ steps.s.outputs.ut_5 }}
+    steps:
+      - id: s
+        env:
+          I: ${{ matrix.del }}
+          N: ${{ strategy.job-total }}
+          FAIL: ${{ vars.PROBE_FAIL }}
+          ATT: ${{ github.run_attempt }}
+        run: |
+          echo "ut_${I}=del ${I}/${N} forsok ${ATT}" >> "$GITHUB_OUTPUT"
+          if [ "$ATT" = 1 ] && [ ",${FAIL}," = *",${I},"* ] 2>/dev/null; then :; fi
+          case ",${FAIL}," in *",${I},"*) [ "$ATT" = 1 ] && { echo "fails on purpose"; exit 1; } ;; esac
+          echo ok
+  samle:
+    needs: [del]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: echo "$NEEDS"
