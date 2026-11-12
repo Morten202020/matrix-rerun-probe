@@ -5,6 +5,7 @@ on:
 jobs:
   del:
     name: ${{ format('del ({0}/{1})', matrix.del, strategy.job-total) }}
+    if: ${{ matrix.del == 2 || matrix.del == 4 || matrix.del == 5 }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
