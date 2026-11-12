@@ -1,5 +1,7 @@
 name: probe
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
 jobs:
   del:
     name: ${{ format('del ({0}/{1})', matrix.del, strategy.job-total) }}
@@ -23,7 +25,6 @@ jobs:
           ATT: ${{ github.run_attempt }}
         run: |
           echo "ut_${I}=del ${I}/${N} forsok ${ATT}" >> "$GITHUB_OUTPUT"
-          if [ "$ATT" = 1 ] && [ ",${FAIL}," = *",${I},"* ] 2>/dev/null; then :; fi
           case ",${FAIL}," in *",${I},"*) [ "$ATT" = 1 ] && { echo "fails on purpose"; exit 1; } ;; esac
           echo ok
   samle:
